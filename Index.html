@@ -1,0 +1,885 @@
+<!-- START OF FILE circuitiq_v_pro_final.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="description" content="Professional Electrical Cable Calculator">
+    <title>CircuitIQ Pro</title>
+    
+    <!-- FONTS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- THEME VARIABLES --- */
+        :root {
+            /* Palette: Slate & Electric Blue */
+            --primary: #2563eb;          /* Electric Blue */
+            --primary-dark: #1e40af;
+            --secondary: #64748b;        /* Slate Gray */
+            
+            --bg-body: #f1f5f9;          /* Light Slate BG */
+            --bg-card: #ffffff;
+            --bg-surface: #f8fafc;
+            
+            --text-main: #0f172a;        /* Dark Slate */
+            --text-muted: #64748b;
+            --text-light: #94a3b8;
+            
+            --border: #e2e8f0;
+            --divider: #cbd5e1;
+
+            --status-ok: #10b981;        /* Emerald */
+            --status-warn: #f59e0b;      /* Amber */
+            --status-err: #ef4444;       /* Rose */
+
+            /* Shadows & Radius */
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --radius-md: 8px;
+            --radius-lg: 12px;
+
+            /* Type */
+            --font-main: 'Inter', system-ui, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        /* --- RESET --- */
+        * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+        body { margin: 0; padding: 0; font-family: var(--font-main); background: var(--bg-body); color: var(--text-main); font-size: 15px; line-height: 1.5; }
+        
+        /* --- LAYOUT --- */
+        .app-wrapper { max-width: 1200px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
+        
+        /* --- HEADER --- */
+        .main-header {
+            background: #0f172a; /* Dark Navy Header */
+            color: white;
+            padding: 1rem 1.5rem;
+            position: sticky; top: 0; z-index: 50;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        .header-content { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; max-width: 1200px; margin: 0 auto; width: 100%; }
+        
+        .brand { display: flex; align-items: center; gap: 0.75rem; }
+        .brand-icon { width: 32px; height: 32px; background: var(--primary); border-radius: 6px; display:grid; place-items:center; color:white; font-weight:700; font-family:var(--font-mono); }
+        .brand h1 { margin: 0; font-size: 1.25rem; font-weight: 700; letter-spacing: -0.5px; }
+
+        /* --- NAVIGATION --- */
+        .nav-tabs { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 2px; }
+        .nav-btn {
+            background: transparent; border: none; color: #94a3b8; 
+            padding: 0.5rem 0.85rem; font-size: 0.85rem; font-weight: 600; cursor: pointer;
+            border-radius: 6px; transition: all 0.2s; white-space: nowrap;
+        }
+        .nav-btn:hover { color: white; background: rgba(255,255,255,0.1); }
+        .nav-btn.active { background: var(--primary); color: white; box-shadow: var(--shadow-sm); }
+
+        /* --- MAIN VIEWPORT --- */
+        .view-section { display: none; padding: 1.5rem; animation: fadeIn 0.3s ease; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- GRIDS --- */
+        .calc-layout { display: grid; grid-template-columns: 350px 1fr; gap: 2rem; align-items: start; }
+        @media (max-width: 900px) { .calc-layout { grid-template-columns: 1fr; } }
+        
+        .ref-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
+
+        /* --- CARDS & PANELS --- */
+        .card { background: var(--bg-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--border); overflow: hidden; }
+        .card-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); background: var(--bg-surface); font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem; }
+        .card-icon { color: var(--text-muted); width: 18px; height: 18px; }
+        .card-body { padding: 1.25rem; }
+
+        /* --- FORMS --- */
+        .input-group { margin-bottom: 1rem; position: relative; }
+        label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.4rem; }
+        
+        .control-wrapper { position: relative; display: flex; align-items: center; }
+        .input-icon { position: absolute; left: 12px; color: var(--text-light); width: 18px; height: 18px; pointer-events: none; }
+        
+        input[type="number"], select, input[type="text"] {
+            width: 100%; padding: 0.65rem 1rem 0.65rem 2.5rem; /* Space for icon */
+            font-family: var(--font-main); font-size: 0.95rem; color: var(--text-main);
+            border: 1px solid var(--border); border-radius: 6px; background: white;
+            transition: border 0.15s, box-shadow 0.15s; appearance: none;
+        }
+        select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2364748b'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E"); background-position: right 0.8rem center; background-repeat: no-repeat; background-size: 1.2rem; padding-right: 2.5rem; }
+
+        input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235, 0.15); }
+        input:hover, select:hover { border-color: #cbd5e1; }
+
+        .helper-text { font-size: 0.75rem; color: var(--text-light); margin-top: 4px; display:flex; justify-content:space-between; }
+        .badge-val { background: var(--bg-surface); padding: 1px 6px; border-radius: 4px; font-weight:600; border: 1px solid var(--border); }
+
+        /* --- SWITCHER (Mode) --- */
+        .segmented-control { display: flex; background: var(--bg-surface); padding: 4px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 1.5rem; }
+        .seg-btn {
+            flex: 1; padding: 6px; text-align: center; cursor: pointer; font-size: 0.9rem; font-weight: 600; color: var(--text-muted);
+            border-radius: 6px; transition: all 0.2s; border: 1px solid transparent; background: transparent;
+        }
+        .seg-btn.active { background: white; color: var(--primary); border-color: var(--border); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+
+        /* --- RESULTS --- */
+        .res-main-card { background: var(--primary); color: white; text-align: center; padding: 2rem; border-radius: var(--radius-lg); margin-bottom: 1.5rem; box-shadow: var(--shadow-md); border:none; position: relative; overflow: hidden; }
+        .res-main-card::before { content:''; position: absolute; top:0; left:0; right:0; height:4px; background: rgba(255,255,255,0.2); }
+        
+        .res-label { text-transform: uppercase; letter-spacing: 1px; font-size: 0.75rem; opacity: 0.9; font-weight: 600; }
+        .res-value { font-size: 3.5rem; font-weight: 700; line-height: 1.1; margin: 0.5rem 0; font-family: var(--font-mono); letter-spacing: -1px; }
+        .res-status { font-weight: 500; font-size: 1.1rem; opacity: 0.95; display: inline-flex; align-items: center; gap: 0.5rem; }
+        .res-main-card.fail { background: var(--status-err); }
+
+        .stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+        @media (max-width: 500px) { .stat-grid { grid-template-columns: 1fr; } }
+
+        .stat-item { background: white; padding: 1rem; border: 1px solid var(--border); border-radius: var(--radius-md); display: flex; flex-direction: column; }
+        .stat-item.active { border-color: var(--primary); background: #f0f7ff; }
+        .stat-head { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: var(--text-muted); display:flex; justify-content:space-between; }
+        .stat-val { font-size: 1.4rem; font-weight: 700; color: var(--text-main); margin-top: 4px; font-family: var(--font-mono); }
+        .stat-limit { font-size: 0.8rem; color: var(--text-muted); }
+        
+        .bar-bg { height: 6px; background: #e2e8f0; border-radius: 99px; margin-top: 8px; overflow: hidden; }
+        .bar-fill { height: 100%; border-radius: 99px; transition: width 0.3s ease; }
+        
+        /* --- TABLES --- */
+        .tech-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        .tech-table th, .tech-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: left; }
+        .tech-table th { background: var(--bg-surface); font-weight: 600; color: var(--text-secondary); }
+        .tech-table td:last-child, .tech-table th:last-child { text-align: right; }
+        .tech-table td.mono { font-family: var(--font-mono); font-weight: 600; color: var(--primary); }
+        .tech-table tr:last-child td { border-bottom: none; }
+
+        .formula-display { background: var(--bg-surface); padding: 0.75rem; border-radius: 6px; font-family: var(--font-mono); font-size: 0.85rem; color: var(--secondary); margin-bottom: 1rem; border: 1px dashed var(--divider); text-align: center; }
+
+        /* --- REFERENCE LISTS --- */
+        .step-list { padding: 0; margin: 0; list-style: none; counter-reset: steps; }
+        .step-list li { position: relative; padding-left: 3rem; margin-bottom: 1rem; }
+        
+        .step-list li::before {
+            counter-increment: steps; content: counter(steps); position: absolute; left: 0; top: 0;
+            width: 32px; height: 32px; border-radius: 50%; 
+            text-align: center; line-height: 28px; font-weight: 700; font-size: 0.85rem;
+            border: 2px solid var(--border); background: var(--bg-surface); color: var(--secondary);
+        }
+        .step-list li.dead::before { background: var(--status-ok); border-color: var(--status-ok); color: white; }
+        .step-list li.live::before { background: var(--status-err); border-color: var(--status-err); color: white; }
+
+        .svg-badge { background: white; border: 1px solid var(--border); border-radius: 6px; padding: 1rem; margin-bottom: 1rem; display: flex; justify-content: center; box-shadow: var(--shadow-sm); }
+        
+        .color-row { display: flex; align-items: center; gap: 0.75rem; }
+        .dot { width: 16px; height: 16px; border-radius: 4px; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1); }
+        
+        /* --- CONVERTER --- */
+        .conv-interface { display: flex; align-items: center; gap: 1rem; background: var(--bg-surface); padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--border); flex-wrap: wrap; }
+        .conv-box { flex: 1; min-width: 140px; }
+        .conv-icon { color: var(--text-muted); font-size: 1.2rem; display:grid; place-items:center; }
+        .result-pill { background: white; padding: 0.65rem 1rem; border-radius: 6px; font-weight: 700; color: var(--primary); font-family: var(--font-mono); border: 1px solid var(--primary); text-align: right; }
+        @media (max-width: 600px) { .conv-interface { flex-direction: column; align-items: stretch; } .conv-icon { transform: rotate(90deg); padding: 0.5rem; } }
+
+        /* Utils */
+        .hidden { display: none !important; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .mt-4 { margin-top: 1.5rem; }
+        
+        /* --- FOOTER --- */
+        .site-footer {
+            margin-top: auto;
+            padding: 1.5rem;
+            text-align: center;
+            font-size: 0.75rem;
+            color: rgba(15, 23, 42, 0.25);
+            border-top: 1px solid rgba(0,0,0,0.03);
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-wrapper">
+    
+    <header class="main-header">
+        <div class="header-content">
+            <div class="brand">
+                <div class="brand-icon">Ω</div>
+                <h1>CircuitIQ <span style="font-weight:400; opacity:0.6; font-size:0.9em;">PRO</span></h1>
+            </div>
+            <!-- REORDERED NAV -->
+            <nav class="nav-tabs">
+                <button class="nav-btn active" data-view="calc">Calculator</button>
+                <button class="nav-btn" data-view="tables">Zs Tables</button>
+                <button class="nav-btn" data-view="cable">Cables</button>
+                <button class="nav-btn" data-view="ref">Ref Sheet</button>
+                <button class="nav-btn" data-view="units">Converter</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 1. CALCULATOR -->
+    <section id="view-calc" class="view-section active">
+        <div class="calc-layout">
+            <aside class="controls">
+                <div class="segmented-control">
+                    <button class="seg-btn active" id="mode-auto">Auto Size</button>
+                    <button class="seg-btn" id="mode-check">Verify Size</button>
+                </div>
+                <!-- Card 1 -->
+                <div class="card" style="margin-bottom: 1.5rem;">
+                    <div class="card-header">
+                        <svg class="card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3v12"/><path d="M18 3v12"/><path d="M2 15h20"/><path d="M3 15a4 4 0 1 1 5 5 4 4 0 0 1-5-5Zm13 0a4 4 0 1 1 5 5 4 4 0 0 1-5-5Z"/></svg>
+                        Cable Parameters
+                    </div>
+                    <div class="card-body">
+                        <div class="input-group">
+                            <label>Cable Type</label>
+                            <div class="control-wrapper">
+                                <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/></svg>
+                                <select id="i-type">
+                                    <option value="te">Flat Twin & Earth (PVC 70°C)</option>
+                                    <option value="singles">Singles in Conduit (PVC 70°C)</option>
+                                    <option value="multi">Multicore SWA (PVC 70°C)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="input-group hidden" id="group-manual">
+                            <label style="color:var(--primary);">Selected Size (CSA)</label>
+                            <div class="control-wrapper">
+                                <svg class="input-icon" style="color:var(--primary)" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>
+                                <select id="i-manual-size" style="border-color:var(--primary); font-weight:600;">
+                                    <option value="1.0">1.0 mm²</option>
+                                    <option value="1.5">1.5 mm²</option>
+                                    <option value="2.5">2.5 mm²</option>
+                                    <option value="4.0">4.0 mm²</option>
+                                    <option value="6.0">6.0 mm²</option>
+                                    <option value="10.0">10.0 mm²</option>
+                                    <option value="16.0">16.0 mm²</option>
+                                    <option value="25.0">25.0 mm²</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label>Method</label>
+                            <div class="control-wrapper">
+                                <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18"/><path d="M12 8v13"/><path d="M7 16l5 5 5-5"/></svg>
+                                <select id="i-method"></select>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label>Length (m)</label>
+                            <div class="control-wrapper">
+                                <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h20"/><path d="M2 16h5"/><path d="M22 16h-5"/></svg>
+                                <input type="number" id="i-len" value="20">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label>Load Current (Ib Amps)</label>
+                            <div class="control-wrapper">
+                                <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                                <input type="number" id="i-ib" value="16">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card 2 -->
+                <div class="card">
+                    <div class="card-header">
+                        <svg class="card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        Protection & Factors
+                    </div>
+                    <div class="card-body">
+                         <div class="input-group">
+                            <label>Protective Device</label>
+                            <div class="control-wrapper">
+                                <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+                                <select id="i-dev-type">
+                                    <option value="B">MCB Type B</option>
+                                    <option value="C">MCB Type C</option>
+                                    <option value="D">MCB Type D</option>
+                                    <option value="BS88">Fuse BS 88</option>
+                                </select>
+                            </div>
+                            <div class="helper-text"><span>Rating (In):</span><span class="badge-val">Cc: 1.0</span></div>
+                            <div class="control-wrapper" style="margin-top:0.4rem;">
+                                <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12"/></svg>
+                                <select id="i-rating"></select>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label>Ext Impedance (Ze)</label>
+                            <div class="control-wrapper">
+                                <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg>
+                                <input type="number" id="i-ze" value="0.35" step="0.01">
+                            </div>
+                        </div>
+                         <div class="stat-grid" style="margin-bottom:0; grid-template-columns:1fr 1fr; gap:0.5rem;">
+                             <div class="input-group" style="margin:0;">
+                                <label>Temp (°C)</label>
+                                <div class="control-wrapper">
+                                    <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
+                                    <input type="number" id="i-temp" value="30" step="5">
+                                </div>
+                                <div class="helper-text"><span id="txt-ca">Ca: 1.0</span></div>
+                             </div>
+                             <div class="input-group" style="margin:0;">
+                                <label>Grouping</label>
+                                <div class="control-wrapper">
+                                    <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                    <input type="number" id="i-grp" value="1" min="1">
+                                </div>
+                                <div class="helper-text"><span id="txt-cg">Cg: 1.0</span></div>
+                             </div>
+                        </div>
+                        <div style="margin-top:1rem; border-top:1px solid var(--border); padding-top:1rem;">
+                            <label class="flex-between" style="cursor:pointer; margin-bottom:0.8rem;">
+                                <span>Thermal Insulation? (Ci)</span>
+                                <input type="checkbox" id="i-thermal">
+                            </label>
+                             <label class="flex-between" style="cursor:pointer; margin-bottom:0;">
+                                <span>80% Zs Rule (OSG)?</span>
+                                <input type="checkbox" id="i-rule80" checked>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <article class="results">
+                <!-- Hero -->
+                <div class="res-main-card" id="hero-card">
+                    <div class="res-label" id="res-subtitle">Minimum Cable CSA</div>
+                    <div class="res-value" id="res-size">--</div>
+                    <div class="res-status">
+                        <svg id="hero-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                        <span id="res-status-txt">Calculating...</span>
+                    </div>
+                    <div id="res-note" style="margin-top:0.5rem; font-size:0.85rem; opacity:0.8;"></div>
+                </div>
+                <!-- Stats -->
+                <div class="stat-grid">
+                    <div class="stat-item" id="card-it">
+                        <div class="stat-head">Capacity (Iz) <span>Current</span></div>
+                        <div class="stat-val"><span id="val-iz">--</span> A</div>
+                        <div class="stat-limit">Target: &gt; <span id="val-in">--</span> A</div>
+                        <div class="bar-bg"><div class="bar-fill" id="bar-it" style="width:0; background:var(--primary);"></div></div>
+                    </div>
+                    <div class="stat-item" id="card-vd">
+                        <div class="stat-head">Voltage Drop <span>&lt; 5%</span></div>
+                        <div class="stat-val"><span id="val-vd">--</span> V</div>
+                        <div class="stat-limit">Limit: 11.50 V</div>
+                        <div class="bar-bg"><div class="bar-fill" id="bar-vd" style="width:0; background:var(--status-warn);"></div></div>
+                    </div>
+                    <div class="stat-item" id="card-zs">
+                        <div class="stat-head">Max Zs <span>Loop Imp</span></div>
+                        <div class="stat-val"><span id="val-zs">--</span> Ω</div>
+                        <div class="stat-limit">Max Allowed: <span id="val-zs-lim">--</span> Ω</div>
+                        <div class="bar-bg"><div class="bar-fill" id="bar-zs" style="width:0; background:var(--status-ok);"></div></div>
+                    </div>
+                    <div class="stat-item">
+                         <div class="stat-head">Max Length <span>At Size</span></div>
+                        <div class="stat-val"><span id="val-max-len">--</span> m</div>
+                        <div class="stat-limit">Cable max run</div>
+                    </div>
+                </div>
+                <!-- Detailed Table -->
+                <div class="card">
+                    <div class="card-header">
+                        <svg class="card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                        Detailed Calculations
+                    </div>
+                    <div class="card-body">
+                        <h4 style="margin:0 0 0.5rem 0; font-size:0.85rem; color:var(--text-muted); text-transform:uppercase;">1. Current Capacity (Iz)</h4>
+                        <div class="formula-display" id="f-iz">It × Ca × Cg × Ci = Iz</div>
+                        <table class="tech-table">
+                            <tr><td>Method It</td><td class="mono" id="t-it">--</td></tr>
+                            <tr><td>Temp Factor (Ca)</td><td class="mono" id="t-ca">1.0</td></tr>
+                            <tr><td>Group Factor (Cg)</td><td class="mono" id="t-cg">1.0</td></tr>
+                            <tr><td>Calculated Iz</td><td class="mono" id="t-iz">--</td></tr>
+                        </table>
+                        <h4 style="margin:1.5rem 0 0.5rem 0; font-size:0.85rem; color:var(--text-muted); text-transform:uppercase;">2. Voltage Drop</h4>
+                        <div class="formula-display" id="f-vd">(mV/A/m × Ib × L) / 1000</div>
+                         <table class="tech-table">
+                            <tr><td>Factor (mV/A/m)</td><td class="mono" id="t-mv">--</td></tr>
+                            <tr><td>Result</td><td class="mono" id="t-vd">-- V</td></tr>
+                        </table>
+                        <h4 style="margin:1.5rem 0 0.5rem 0; font-size:0.85rem; color:var(--text-muted); text-transform:uppercase;">3. Earth Loop (Zs)</h4>
+                        <div class="formula-display" id="f-zs">Ze + ((R1+R2) × L × 1.2)</div>
+                         <table class="tech-table">
+                            <tr><td>R1+R2 (mΩ/m)</td><td class="mono" id="t-r1r2">--</td></tr>
+                            <tr><td>Circuit R1+R2 (Hot)</td><td class="mono" id="t-rhot">-- Ω</td></tr>
+                            <tr><td>Total Zs</td><td class="mono" id="t-zs">-- Ω</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <!-- 2. ZS TABLES -->
+    <section id="view-tables" class="view-section">
+        <div class="flex-between" style="margin-bottom:1.5rem;">
+            <h2>Max Zs Tables (BS 7671)</h2>
+            <div style="width:200px;">
+                <select id="tbl-dev">
+                    <option value="B">MCB Type B</option>
+                    <option value="C">MCB Type C</option>
+                    <option value="D">MCB Type D</option>
+                    <option value="BS88">Fuse BS 88</option>
+                    <option value="BS3036">Fuse BS 3036</option>
+                </select>
+            </div>
+        </div>
+        <div class="card">
+            <table class="tech-table" id="table-zs-out">
+                <thead><tr><th>Rating (A)</th><th>100% Limit (Ω)</th><th>80% OSG (Ω)</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </section>
+
+     <!-- 3. CABLE DATA -->
+    <section id="view-cable" class="view-section">
+        <div class="flex-between" style="margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
+             <h2>Cable Data (Appendix 4)</h2>
+             <div style="display:flex; gap:1rem; flex:1; max-width:500px;">
+                 <select id="cd-type"><option value="te">Twin & Earth</option><option value="singles">Singles</option><option value="multi">Multicore SWA</option></select>
+                 <select id="cd-method"></select>
+             </div>
+        </div>
+         <div class="card">
+            <table class="tech-table" id="table-cab-out">
+                <thead><tr><th>Size (mm²)</th><th>Current (It)</th><th>Volt Drop (mV/A/m)</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- 4. CHEAT SHEET -->
+    <section id="view-ref" class="view-section">
+        <div class="ref-grid">
+            <div class="card">
+                <div class="card-header">Test Sequence (Dead → Live)</div>
+                <div class="card-body">
+                    <ol class="step-list">
+                        <li class="dead">Continuity of CPC & Bonding</li>
+                        <li class="dead">Continuity of Ring Final</li>
+                        <li class="dead">Insulation Resistance (IR)</li>
+                        <li class="dead">Polarity (Dead)</li>
+                        <li class="live">Polarity (Live supply)</li>
+                        <li class="live">Earth Loop (Zs)</li>
+                        <li class="live">Prospective Fault Current</li>
+                        <li class="live">RCD Function</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Cable Colours</div>
+                <div class="card-body">
+                    <table class="tech-table">
+                        <thead><tr><th>Core</th><th>Harmonized</th><th>Pre-2004</th></tr></thead>
+                        <tr>
+                            <td>L1</td>
+                            <td><div class="color-row"><div class="dot" style="background:#854d0e;"></div> Brn</div></td>
+                            <td><div class="color-row"><div class="dot" style="background:#dc2626;"></div> Red</div></td>
+                        </tr>
+                         <tr>
+                            <td>L2</td>
+                            <td><div class="color-row"><div class="dot" style="background:#0f172a;"></div> Blk</div></td>
+                            <td><div class="color-row"><div class="dot" style="background:#ca8a04;"></div> Yel</div></td>
+                        </tr>
+                        <tr>
+                            <td>L3</td>
+                            <td><div class="color-row"><div class="dot" style="background:#64748b;"></div> Gry</div></td>
+                            <td><div class="color-row"><div class="dot" style="background:#1e3a8a;"></div> Blu</div></td>
+                        </tr>
+                        <tr>
+                            <td>N</td>
+                            <td><div class="color-row"><div class="dot" style="background:#2563eb;"></div> Blu</div></td>
+                            <td><div class="color-row"><div class="dot" style="background:#0f172a;"></div> Blk</div></td>
+                        </tr>
+                         <tr>
+                            <td>CPC</td>
+                            <td><div class="color-row"><div class="dot" style="background:conic-gradient(#16a34a 50%, #facc15 0);"></div> G/Y</div></td>
+                            <td>
+                                <div class="color-row">
+                                    <div class="dot" style="background:conic-gradient(#16a34a 50%, #facc15 0);"></div> G/Y*
+                                </div>
+                                <div style="font-size:0.7rem; color:var(--text-light); margin-top:4px;">* Solid Green pre-1970</div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Statutory Labels</div>
+                <div class="card-body">
+                    <!-- Bonding -->
+                     <div class="svg-badge">
+                        <svg viewBox="0 0 300 70" width="100%" height="auto">
+                            <rect width="300" height="70" rx="4" fill="#16a34a" stroke="#15803d" stroke-width="2"/>
+                            <text x="150" y="30" font-family="Arial" font-weight="bold" font-size="14" fill="white" text-anchor="middle">SAFETY ELECTRICAL CONNECTION</text>
+                            <text x="150" y="52" font-family="Arial" font-weight="bold" font-size="14" fill="white" text-anchor="middle">DO NOT REMOVE</text>
+                        </svg>
+                    </div>
+                     <!-- Mixed -->
+                    <div class="svg-badge">
+                        <svg viewBox="0 0 300 90" width="100%" height="auto">
+                            <rect width="300" height="90" rx="4" fill="#fbbf24" stroke="#d97706" stroke-width="2"/>
+                             <path d="M40 20 L20 70 L60 70 Z" fill="black"/>
+                             <text x="40" y="62" text-anchor="middle" fill="white" font-weight="bold" font-size="30">!</text>
+                            <text x="70" y="35" font-family="Arial" font-weight="bold" font-size="16" fill="black">CAUTION</text>
+                            <text x="70" y="55" font-family="Arial" font-size="11" fill="black">WIRING COLOURS TO TWO VERSIONS</text>
+                            <text x="70" y="70" font-family="Arial" font-size="11" fill="black">OF BS 7671 EXIST.</text>
+                        </svg>
+                    </div>
+                    <!-- RCD -->
+                    <div class="svg-badge">
+                        <svg viewBox="0 0 300 90" width="100%" height="auto">
+                            <rect width="300" height="90" rx="4" fill="#fbbf24" stroke="#d97706" stroke-width="2"/>
+                            <text x="150" y="25" font-family="Arial" font-weight="bold" font-size="14" fill="black" text-anchor="middle">RCD TEST</text>
+                            <text x="150" y="50" font-family="Arial" font-size="12" fill="black" text-anchor="middle">Test SIX-MONTHLY by pressing</text>
+                            <text x="150" y="68" font-family="Arial" font-size="12" fill="black" text-anchor="middle">the button marked 'T'.</text>
+                        </svg>
+                    </div>
+                    <!-- Periodic Inspection (New) -->
+                    <div class="svg-badge">
+                        <svg viewBox="0 0 300 70" width="100%" height="auto">
+                            <rect width="300" height="70" rx="4" fill="#fff" stroke="#333" stroke-width="2"/>
+                            <rect width="300" height="24" fill="#333" />
+                            <text x="10" y="17" font-family="Arial" font-weight="bold" font-size="12" fill="white">PERIODIC INSPECTION</text>
+                            <text x="10" y="42" font-family="Arial" font-size="11" fill="#333">Date of last inspection: __________</text>
+                            <text x="10" y="60" font-family="Arial" font-size="11" fill="#333">Date of next inspection: __________</text>
+                        </svg>
+                    </div>
+                    <!-- 400V (New) -->
+                    <div class="svg-badge">
+                        <svg viewBox="0 0 300 60" width="100%" height="auto">
+                            <rect width="300" height="60" rx="4" fill="#fbbf24" stroke="#d97706" stroke-width="2"/>
+                            <path d="M40 8 L25 50 L55 50 Z" fill="black"/>
+                            <text x="160" y="38" font-family="Arial" font-weight="bold" font-size="22" fill="black" text-anchor="middle">DANGER 400V</text>
+                        </svg>
+                    </div>
+                    <!-- Dual Supply (New) -->
+                    <div class="svg-badge">
+                        <svg viewBox="0 0 300 60" width="100%" height="auto">
+                            <rect width="300" height="60" rx="4" fill="#fbbf24" stroke="#d97706" stroke-width="2"/>
+                            <text x="150" y="25" font-family="Arial" font-weight="bold" font-size="16" fill="black" text-anchor="middle">WARNING</text>
+                            <text x="150" y="48" font-family="Arial" font-weight="bold" font-size="12" fill="black" text-anchor="middle">DUAL SUPPLY. Do not work live.</text>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. UNIT CONVERTER (Last Tab) -->
+    <section id="view-units" class="view-section">
+        <h2 style="margin-bottom:1.5rem;">Unit Converter</h2>
+        <div class="card" style="margin-bottom:2rem;">
+            <div class="card-header">General Standard Units</div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="u-cat" style="padding:10px;">
+                        <option value="Length">Length</option>
+                        <option value="Power">Power</option>
+                        <option value="Area">Area (CSA)</option>
+                        <option value="Temperature">Temperature</option>
+                        <option value="Weight">Weight/Mass</option>
+                        <option value="Pressure">Pressure</option>
+                    </select>
+                </div>
+                
+                <div class="conv-interface">
+                    <div class="conv-box">
+                        <label>From</label>
+                        <select id="u-from"></select>
+                        <input type="number" id="u-input" value="1" style="margin-top:0.5rem;">
+                    </div>
+                    <div class="conv-icon">➜</div>
+                    <div class="conv-box">
+                         <label>To</label>
+                         <select id="u-to"></select>
+                         <div id="u-result" class="result-pill" style="margin-top:0.5rem;">--</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="site-footer">Created by J Copping</footer>
+
+</div>
+
+<script>
+/** 
+ * CircuitIQ Logic Module 
+ */
+const App = (function() {
+
+    const CABLES = {
+        te: { label: "Twin & Earth", r1r2: { 1.0:36.2, 1.5:30.2, 2.5:19.5, 4.0:16.7, 6.0:10.5, 10:6.44, 16:4.23, 25:2.7 } },
+        singles: { label: "Singles (PVC)", r1r2: { 1.0:36.2, 1.5:24.2, 2.5:14.8, 4.0:9.22, 6.0:6.16, 10:3.66, 16:2.30, 25:1.45 } }
+    };
+    CABLES.multi = { label: "SWA (2-core)", r1r2: CABLES.te.r1r2 };
+    
+    const TABLES = {
+        'te': {
+            'C': {1.0:13, 1.5:16, 2.5:21, 4.0:27, 6.0:34, 10.0:45, 16.0:57, 25.0:76},
+            '100': {1.0:13, 1.5:16, 2.5:21, 4.0:27, 6.0:34, 10.0:45, 16.0:57, 25.0:76},
+            '102': {1.0:13, 1.5:16, 2.5:21, 4.0:27, 6.0:35, 10.0:47, 16.0:63, 25.0:82}
+        },
+        'singles': {
+            'A': {1.0:11, 1.5:14.5, 2.5:20, 4.0:26, 6.0:34, 10.0:46, 16.0:61, 25.0:80},
+            'B': {1.0:13.5, 1.5:17.5, 2.5:24, 4.0:32, 6.0:41, 10.0:57, 16.0:76, 25.0:101}
+        },
+        'multi': {
+             'C': {1.0:15, 1.5:19.5, 2.5:27, 4.0:36, 6.0:46, 10.0:63, 16.0:85, 25.0:112},
+             'E': {1.0:17, 1.5:22, 2.5:30, 4.0:40, 6.0:51, 10.0:70, 16.0:94, 25.0:119}
+        }
+    };
+    const MV = { 1.0:44, 1.5:29, 2.5:18, 4.0:11, 6.0:7.3, 10.0:4.4, 16.0:2.8, 25.0:1.75 };
+    const DEVICES = {
+        MCB: [6, 10, 16, 20, 25, 32, 40, 50, 63],
+        BS88: [2, 4, 6, 10, 16, 20, 25, 32, 40, 50, 63, 80],
+        BS3036: [5, 15, 20, 30, 45, 60, 100]
+    };
+    const FUSE_ZS = { BS88: {2:33.1, 4:15.6, 6:8.52, 10:5.11, 16:2.7, 20:1.7, 32:1.04}, BS3036: {5:9.1, 15:2.43, 30:1.09} };
+    const FACTORS_CA = { 25:1.03, 30:1.0, 35:0.94, 40:0.87, 45:0.79, 50:0.71 };
+    const FACTORS_CG = { 1:1.0, 2:0.8, 3:0.7, 4:0.65, 5:0.6, 6:0.57, 7:0.54, 8:0.52 };
+    const METHODS_MAP = {
+        te: [{v:'C',t:'Clipped Direct'}, {v:'100',t:'Ceiling <100mm'}, {v:'102',t:'Stud Wall'}],
+        singles: [{v:'B',t:'Conduit'}, {v:'A',t:'Conduit in Wall'}],
+        multi: [{v:'C',t:'Clipped Direct'}, {v:'E',t:'Tray (Perf)'}]
+    };
+    const CONVERTER_DATA = {
+        Length: { units: { m:1, km:1000, cm:0.01, mm:0.001, ft:0.3048, in:0.0254 } },
+        Power: { units: { W:1, kW:1000, hp:746 } },
+        Weight: { units: { kg:1, g:0.001, lb:0.4536, oz:0.02835 } },
+        Area: { units: { sqm:1, sqmm:0.000001, sqft:0.0929 } }
+    };
+
+    const S = { mode: 'auto', vals: { type: 'te', method: 'C', size: 2.5, len: 20, ib: 16, dev: 'B', rat: 20, ze: 0.35, temp: 30, grp: 1, ci: false, rule80: true } };
+    const $ = id => document.getElementById(id);
+    const setHtml = (id, v) => $(id) && ($(id).innerHTML = v);
+    
+    function loadState() {
+        const saved = localStorage.getItem('ciq_pro_state');
+        if(saved) Object.assign(S.vals, JSON.parse(saved));
+        $('i-type').value = S.vals.type; updateMethodOptions();
+        $('i-method').value = S.vals.method;
+        if($('i-manual-size')) $('i-manual-size').value = S.vals.size;
+        $('i-len').value = S.vals.len;
+        $('i-ib').value = S.vals.ib;
+        $('i-dev-type').value = S.vals.dev; updateRatings();
+        $('i-rating').value = S.vals.rat;
+        $('i-ze').value = S.vals.ze;
+        $('i-temp').value = S.vals.temp;
+        $('i-grp').value = S.vals.grp;
+        $('i-thermal').checked = S.vals.ci;
+        $('i-rule80').checked = S.vals.rule80;
+    }
+    
+    function saveState() {
+        S.vals.type = $('i-type').value;
+        S.vals.method = $('i-method').value;
+        S.vals.size = parseFloat($('i-manual-size').value);
+        S.vals.len = parseFloat($('i-len').value) || 0;
+        S.vals.ib = parseFloat($('i-ib').value) || 0;
+        S.vals.dev = $('i-dev-type').value;
+        S.vals.rat = parseFloat($('i-rating').value);
+        S.vals.ze = parseFloat($('i-ze').value) || 0;
+        S.vals.temp = parseFloat($('i-temp').value) || 30;
+        S.vals.grp = parseFloat($('i-grp').value) || 1;
+        S.vals.ci = $('i-thermal').checked;
+        S.vals.rule80 = $('i-rule80').checked;
+        localStorage.setItem('ciq_pro_state', JSON.stringify(S.vals));
+        calc();
+    }
+
+    function initUI() {
+        document.querySelectorAll('.nav-btn').forEach(b => b.onclick = (e) => {
+            document.querySelectorAll('.nav-btn').forEach(x => x.classList.remove('active'));
+            document.querySelectorAll('.view-section').forEach(x => x.classList.remove('active'));
+            e.target.classList.add('active');
+            $( 'view-' + e.target.dataset.view ).classList.add('active');
+        });
+        const toggleMode = (m) => {
+            S.mode = m;
+            $('mode-auto').classList.toggle('active', m === 'auto');
+            $('mode-check').classList.toggle('active', m === 'check');
+            $('group-manual').classList.toggle('hidden', m === 'auto');
+            $('res-subtitle').innerText = m === 'auto' ? "Minimum Recommended CSA" : "Cable Verification";
+            calc();
+        };
+        $('mode-auto').onclick = () => toggleMode('auto');
+        $('mode-check').onclick = () => toggleMode('check');
+        $('i-type').onchange = () => { updateMethodOptions(); saveState(); };
+        $('i-dev-type').onchange = () => { updateRatings(); saveState(); };
+        ['i-method', 'i-manual-size', 'i-len', 'i-ib', 'i-rating', 'i-ze', 'i-temp', 'i-grp', 'i-thermal', 'i-rule80'].forEach(id => $(id).onchange = saveState);
+        renderZsRef(); renderCabRef(); initConverter();
+    }
+
+    function updateMethodOptions() {
+        const type = $('i-type').value;
+        const sel = $('i-method'); sel.innerHTML = '';
+        METHODS_MAP[type].forEach(m => sel.innerHTML += `<option value="${m.v}">${m.t} (Method ${m.v})</option>`);
+    }
+
+    function updateRatings() {
+        const dev = $('i-dev-type').value;
+        const sel = $('i-rating'); sel.innerHTML = '';
+        const list = ['B','C','D'].includes(dev) ? DEVICES.MCB : (dev==='BS88' ? DEVICES.BS88 : DEVICES.BS3036);
+        list.forEach(r => sel.innerHTML += `<option value="${r}">${r} A</option>`);
+    }
+
+    function calc() {
+        const v = S.vals;
+        const sizes = [1.0, 1.5, 2.5, 4.0, 6.0, 10.0, 16.0, 25.0];
+        const ca = FACTORS_CA[v.temp] || 1.0;
+        const cg = FACTORS_CG[v.grp] || 0.5;
+        const ci = v.ci ? 0.5 : 1.0;
+        const cc = (v.dev === 'BS3036') ? 0.725 : 1.0;
+        const C_total = ca * cg * ci * cc;
+        setHtml('txt-ca', `Ca: ${ca.toFixed(2)}`); setHtml('txt-cg', `Cg: ${cg}`);
+        
+        let maxZs = 999;
+        if(['B','C','D'].includes(v.dev)) {
+            let mult = v.dev==='B'?5:(v.dev==='C'?10:20);
+            maxZs = (230 * 0.95) / (v.rat * mult);
+        } else { maxZs = FUSE_ZS[v.dev]?.[v.rat] || 999; }
+        if(v.rule80) maxZs = maxZs * 0.8;
+
+        let result = null;
+        let testList = S.mode === 'auto' ? sizes : [v.size];
+        for(let csa of testList) {
+            let itTable = TABLES[v.type][v.method] || TABLES.te.C; 
+            let it = itTable[csa] || 0;
+            let iz = it * C_total;
+            let mv = MV[csa];
+            let drop = (mv * v.ib * v.len) / 1000;
+            let r_base = CABLES[v.type].r1r2[csa];
+            let r_hot = (r_base / 1000) * 1.2;
+            let zs = v.ze + (r_hot * v.len);
+            
+            // New strict logic: Ib <= In <= Iz
+            // 1. Check overload: Load > Device (Bad design)
+            if (v.ib > v.rat) {
+                result = { csa, it, iz, mv, drop, zs, ok:false, failMsg: `Overload: Load (${v.ib}A) > Device (${v.rat}A)` };
+                // In auto mode we fail immediately as no cable fixes an overload setting
+                break;
+            }
+
+            // 2. Check Device > Cable Capacity (Unsafe)
+            let okDeviceVsCable = v.rat <= iz;
+            
+            // 3. Check other constraints
+            let okVd = drop <= 11.5;
+            let okZs = zs <= maxZs;
+
+            if(okDeviceVsCable && okVd && okZs) {
+                result = { csa, it, iz, mv, drop, zs, ok:true, failMsg: '' };
+                if(S.mode === 'auto') break;
+            } else {
+                let reason = !okDeviceVsCable ? `Device (${v.rat}A) > Cap (${iz.toFixed(1)}A)` : (!okVd ? "Volt Drop" : "Max Zs");
+                result = { csa, it, iz, mv, drop, zs, ok:false, failMsg: reason };
+            }
+        }
+        
+        // Final fallback
+        if(!result) result = { csa: testList[testList.length-1], ok:false, failMsg:"Check Inputs" };
+        
+        // Edge case if user manually picked a size but inputs are wild
+        if(S.mode === 'check' && !result) {
+             // Logic above should catch it, but ensure we render something
+             result = { csa: v.size, it:0, iz:0, mv:0, drop:0, zs:0, ok:false, failMsg:"Invalid Config" };
+        }
+
+        renderResults(result, v.rat, maxZs, {ca, cg, ci, cc}, CABLES[v.type].r1r2[result.csa]);
+    }
+
+    function renderResults(r, i_n, max_zs, f, r_base) {
+        $('hero-card').className = r.ok ? "res-main-card" : "res-main-card fail";
+        $('hero-icon').innerHTML = r.ok ? '<polyline points="20 6 9 17 4 12"/>' : '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>';
+        setHtml('res-size', r.csa + '<span style="font-size:1.5rem">mm²</span>');
+        setHtml('res-status-txt', r.ok ? "Compliant" : r.failMsg);
+        
+        const drawBar = (elem, val, max, good) => {
+            // Fix bar visual if value is invalid/zero
+            if(max === 0 || isNaN(max)) max = 1; 
+            const pct = Math.min((val/max)*100, 100);
+            const el = $(elem); el.style.width = pct + "%";
+            el.style.background = (!good || pct > 100) ? "var(--status-err)" : (pct > 85 ? "var(--status-warn)" : "var(--status-ok)");
+        };
+        
+        setHtml('val-iz', r.iz.toFixed(1)); 
+        setHtml('val-in', i_n); 
+        // Pass if Cable >= Device
+        drawBar('bar-it', i_n, r.iz, r.iz >= i_n);
+        
+        setHtml('val-vd', r.drop.toFixed(2)); 
+        drawBar('bar-vd', r.drop, 11.5, r.drop <= 11.5);
+        
+        setHtml('val-zs', r.zs.toFixed(2)); 
+        setHtml('val-zs-lim', max_zs.toFixed(2)); 
+        drawBar('bar-zs', r.zs, max_zs, r.zs <= max_zs);
+        
+        let maxL = (r.mv > 0 && S.vals.ib > 0) ? Math.floor((11.5 * 1000)/(r.mv * S.vals.ib)) : 0; 
+        setHtml('val-max-len', maxL);
+        
+        setHtml('t-it', r.it + ' A'); setHtml('t-ca', f.ca.toFixed(2)); setHtml('t-cg', f.cg.toFixed(2)); setHtml('t-iz', r.iz.toFixed(2) + ' A');
+        setHtml('t-mv', r.mv); setHtml('t-vd', r.drop.toFixed(2) + ' V');
+        setHtml('t-r1r2', r_base || '-'); 
+        let hotR = ((r_base/1000)*1.2*S.vals.len).toFixed(2);
+        setHtml('t-rhot', (!isNaN(hotR) ? hotR : '-') + ' Ω'); 
+        setHtml('t-zs', r.zs.toFixed(2) + ' Ω');
+    }
+
+    function renderZsRef() {
+        const sel = $('tbl-dev'); sel.onchange = renderZsRef;
+        const dev = sel.value; const table = $('table-zs-out').querySelector('tbody'); table.innerHTML = '';
+        const list = ['B','C','D'].includes(dev) ? DEVICES.MCB : DEVICES[dev];
+        list.forEach(r => {
+             let limit = 0; if(['B','C','D'].includes(dev)) { let m = dev==='B'?5:(dev==='C'?10:20); limit = (230*0.95)/(r*m); } else { limit = FUSE_ZS[dev]?.[r] || 0; }
+             if(limit>0) table.innerHTML += `<tr><td>${r} A</td><td class="mono">${limit.toFixed(2)}</td><td class="mono">${(limit*0.8).toFixed(2)}</td></tr>`;
+        });
+    }
+
+    function renderCabRef() {
+        const tSel = $('cd-type'), mSel = $('cd-method');
+        const update = () => { mSel.innerHTML = ''; METHODS_MAP[tSel.value].forEach(m => mSel.innerHTML += `<option value="${m.v}">${m.t}</option>`); draw(); };
+        const draw = () => {
+             const tab = TABLES[tSel.value][mSel.value]; const tBody = $('table-cab-out').querySelector('tbody'); tBody.innerHTML = '';
+             const keys = Object.keys(tab).sort((a,b) => parseFloat(a) - parseFloat(b));
+             for(let sz of keys) tBody.innerHTML += `<tr><td class="mono">${sz}</td><td>${tab[sz]} A</td><td>${MV[sz] || '-'}</td></tr>`;
+        };
+        tSel.onchange = update; mSel.onchange = draw; update();
+    }
+
+    function initConverter() {
+        const uCat = $('u-cat'), uFrom = $('u-from'), uTo = $('u-to'), uIn = $('u-input'), uRes = $('u-result');
+        const populate = () => {
+            const data = CONVERTER_DATA[uCat.value].units;
+            let ops = ''; for(let k in data) ops += `<option value="${k}">${k}</option>`;
+            uFrom.innerHTML = ops; uTo.innerHTML = ops; calc();
+        };
+        const calc = () => {
+             const data = CONVERTER_DATA[uCat.value].units;
+             const v = parseFloat(uIn.value); const base = v * data[uFrom.value];
+             const res = base / data[uTo.value]; uRes.innerText = res.toFixed(4);
+        };
+        uCat.onchange = populate; uFrom.onchange = calc; uTo.onchange = calc; uIn.oninput = calc; populate();
+    }
+
+    return { run: () => { initUI(); loadState(); } };
+})();
+
+window.addEventListener('DOMContentLoaded', App.run);
+
+</script>
+</body>
+</html>
